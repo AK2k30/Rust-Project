@@ -513,14 +513,16 @@ impl<Tz: TimeZone> DateTime<Tz> {
         let earlier_time =
             (self.month(), self.day(), self.time()) < (base.month(), base.day(), base.time());
 
-        years -= match earlier_time {
-            true => 1,
-            false => 0,
+        years -= if earlier_time {
+            1
+        } else {
+            0
         };
 
-        match years >= 0 {
-            true => Some(years as u32),
-            false => None,
+        if years >= 0 {
+            Some(years as u32)
+        } else {
+            None
         }
     }
 

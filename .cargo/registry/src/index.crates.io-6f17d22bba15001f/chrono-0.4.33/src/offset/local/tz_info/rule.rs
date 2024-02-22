@@ -688,9 +688,10 @@ impl UtcDateTime {
         let minute = (remaining_seconds / SECONDS_PER_MINUTE) % MINUTES_PER_HOUR;
         let second = remaining_seconds % SECONDS_PER_MINUTE;
 
-        let year = match year >= i32::min_value() as i64 && year <= i32::max_value() as i64 {
-            true => year as i32,
-            false => return Err(Error::OutOfRange("i64 is out of range for i32")),
+        let year = if year >= i32::min_value() as i64 && year <= i32::max_value() as i64 {
+            year as i32
+        } else {
+            return Err(Error::OutOfRange("i64 is out of range for i32"))
         };
 
         Ok(Self {

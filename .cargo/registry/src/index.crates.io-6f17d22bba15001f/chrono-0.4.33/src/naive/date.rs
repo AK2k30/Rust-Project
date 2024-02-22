@@ -638,9 +638,10 @@ impl NaiveDate {
             return Some(self);
         }
 
-        match months.0 <= core::i32::MAX as u32 {
-            true => self.diff_months(months.0 as i32),
-            false => None,
+        if months.0 <= core::i32::MAX as u32 {
+            self.diff_months(months.0 as i32)
+        } else {
+            None
         }
     }
 
@@ -674,9 +675,10 @@ impl NaiveDate {
         }
 
         // Copy `i32::MAX` here so we don't have to do a complicated cast
-        match months.0 <= 2_147_483_647 {
-            true => self.diff_months(-(months.0 as i32)),
-            false => None,
+        if months.0 <= 2_147_483_647 {
+            self.diff_months(-(months.0 as i32))
+        } else {
+            None
         }
     }
 
@@ -751,9 +753,10 @@ impl NaiveDate {
     /// ```
     #[must_use]
     pub const fn checked_add_days(self, days: Days) -> Option<Self> {
-        match days.0 <= i32::MAX as u64 {
-            true => self.add_days(days.0 as i32),
-            false => None,
+        if days.0 <= i32::MAX as u64 {
+            self.add_days(days.0 as i32)
+        } else {
+            None
         }
     }
 
@@ -778,9 +781,10 @@ impl NaiveDate {
     /// ```
     #[must_use]
     pub const fn checked_sub_days(self, days: Days) -> Option<Self> {
-        match days.0 <= i32::MAX as u64 {
-            true => self.add_days(-(days.0 as i32)),
-            false => None,
+        if days.0 <= i32::MAX as u64 {
+            self.add_days(-(days.0 as i32))
+        } else {
+            None
         }
     }
 
@@ -1235,9 +1239,10 @@ impl NaiveDate {
             years -= 1;
         }
 
-        match years >= 0 {
-            true => Some(years as u32),
-            false => None,
+        if years >= 0 {
+            Some(years as u32)
+        } else {
+            None
         }
     }
 

@@ -317,9 +317,10 @@ impl Of {
     #[inline]
     const fn validate(self) -> Option<Of> {
         let ol = self.ol();
-        match ol >= MIN_OL && ol <= MAX_OL {
-            true => Some(self),
-            false => None,
+        if ol >= MIN_OL && ol <= MAX_OL {
+            Some(self)
+        } else {
+            None
         }
     }
 
@@ -404,9 +405,10 @@ pub(super) struct Mdf(u32);
 impl Mdf {
     #[inline]
     pub(super) const fn new(month: u32, day: u32, YearFlags(flags): YearFlags) -> Option<Mdf> {
-        match month >= 1 && month <= 12 && day >= 1 && day <= 31 {
-            true => Some(Mdf((month << 9) | (day << 4) | flags as u32)),
-            false => None,
+        if month >= 1 && month <= 12 && day >= 1 && day <= 31 {
+            Some(Mdf((month << 9) | (day << 4) | flags as u32))
+        } else {
+            None
         }
     }
 

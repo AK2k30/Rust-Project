@@ -50,9 +50,10 @@ pub(super) fn offset_from_local_datetime(local: &NaiveDateTime) -> LocalResult<F
 pub(super) fn offset(d: &NaiveDateTime, local: bool) -> LocalResult<FixedOffset> {
     let naive_sys_time = system_time_from_naive_date_time(d);
 
-    let local_sys_time = match local {
-        false => from_utc_time(naive_sys_time),
-        true => from_local_time(naive_sys_time),
+    let local_sys_time = if local {
+        from_local_time(naive_sys_time)
+    } else {
+        from_utc_time(naive_sys_time)
     };
 
     if let Ok(offset) = local_sys_time {

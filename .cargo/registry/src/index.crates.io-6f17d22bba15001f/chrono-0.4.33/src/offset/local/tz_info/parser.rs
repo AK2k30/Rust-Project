@@ -11,11 +11,10 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
     let mut cursor = Cursor::new(bytes);
     let state = State::new(&mut cursor, true)?;
     let (state, footer) = match state.header.version {
-        Version::V1 => match cursor.is_empty() {
-            true => (state, None),
-            false => {
-                return Err(Error::InvalidTzFile("remaining data after end of TZif v1 data block"))
-            }
+        Version::V1 => if cursor.is_empty() {
+            (state, None)
+        } else {
+            return Err(Error::InvalidTzFile("remaining data after end of TZif v1 data block"))
         },
         Version::V2 | Version::V3 => {
             let state = State::new(&mut cursor, false)?;
@@ -85,12 +84,13 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
                 return Err(Error::InvalidTzFile("invalid footer"));
             }
 
-            match tz_string.is_empty() {
-                true => None,
-                false => Some(TransitionRule::from_tz_string(
-                    tz_string.as_bytes(),
-                    state.header.version == Version::V3,
-                )?),
+            if tz_string.is_empty() {
+                None
+            } else {
+                Some(TransitionRule::from_tz_string(
+                tz_string.as_bytes(),
+                state.header.version == Version::V3,
+            )?)
             }
         }
         None => None,
@@ -124,9 +124,10 @@ impl<'a> State<'a> {
     /// Read TZif data blocks
     fn new(cursor: &mut Cursor<'a>, first: bool) -> Result<Self, Error> {
         let header = Header::new(cursor)?;
-        let time_size = match first {
-            true => 4, // We always parse V1 first
-            false => 8,
+        let time_size = if first {
+            4
+        } else {
+            8
         };
 
         Ok(Self {
