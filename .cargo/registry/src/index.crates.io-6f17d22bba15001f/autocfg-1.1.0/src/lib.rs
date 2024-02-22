@@ -169,9 +169,9 @@ impl AutoCfg {
         let mut ac = AutoCfg {
             rustflags: rustflags(&target, &dir),
             out_dir: dir,
-            rustc: rustc,
-            rustc_version: rustc_version,
-            target: target,
+            rustc,
+            rustc_version,
+            target,
             no_std: false,
         };
 
