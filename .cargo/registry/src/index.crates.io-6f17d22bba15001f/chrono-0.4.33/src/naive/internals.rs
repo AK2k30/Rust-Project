@@ -893,7 +893,10 @@ mod tests {
     #[test]
     fn test_weekday_from_u32_mod7() {
         for i in 0..=1000 {
-            assert_eq!(weekday_from_u32_mod7(i), Weekday::try_from((i % 7) as u8).unwrap());
+            assert_eq!(
+                weekday_from_u32_mod7(i),
+                Weekday::try_from((i % 7) as u8).unwrap()
+            );
         }
         assert_eq!(weekday_from_u32_mod7(u32::MAX), Weekday::Thu);
     }

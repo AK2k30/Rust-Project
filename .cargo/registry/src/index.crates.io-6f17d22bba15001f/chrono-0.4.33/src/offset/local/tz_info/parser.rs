@@ -11,11 +11,15 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
     let mut cursor = Cursor::new(bytes);
     let state = State::new(&mut cursor, true)?;
     let (state, footer) = match state.header.version {
-        Version::V1 => if cursor.is_empty() {
-            (state, None)
-        } else {
-            return Err(Error::InvalidTzFile("remaining data after end of TZif v1 data block"))
-        },
+        Version::V1 => {
+            if cursor.is_empty() {
+                (state, None)
+            } else {
+                return Err(Error::InvalidTzFile(
+                    "remaining data after end of TZif v1 data block",
+                ));
+            }
+        }
         Version::V2 | Version::V3 => {
             let state = State::new(&mut cursor, false)?;
             (state, Some(cursor.remaining()))
@@ -23,8 +27,10 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
     };
 
     let mut transitions = Vec::with_capacity(state.header.transition_count);
-    for (arr_time, &local_time_type_index) in
-        state.transition_times.chunks_exact(state.time_size).zip(state.transition_types)
+    for (arr_time, &local_time_type_index) in state
+        .transition_times
+        .chunks_exact(state.time_size)
+        .zip(state.transition_types)
     {
         let unix_leap_time =
             state.parse_time(&arr_time[0..state.time_size], state.header.version)?;
@@ -66,7 +72,11 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
 
     let std_walls_iter = state.std_walls.iter().copied().chain(iter::repeat(0));
     let ut_locals_iter = state.ut_locals.iter().copied().chain(iter::repeat(0));
-    if std_walls_iter.zip(ut_locals_iter).take(state.header.type_count).any(|pair| pair == (0, 1)) {
+    if std_walls_iter
+        .zip(ut_locals_iter)
+        .take(state.header.type_count)
+        .any(|pair| pair == (0, 1))
+    {
         return Err(Error::InvalidTzFile(
             "invalid couple of standard/wall and UT/local indicators",
         ));
@@ -88,9 +98,9 @@ pub(super) fn parse(bytes: &[u8]) -> Result<TimeZone, Error> {
                 None
             } else {
                 Some(TransitionRule::from_tz_string(
-                tz_string.as_bytes(),
-                state.header.version == Version::V3,
-            )?)
+                    tz_string.as_bytes(),
+                    state.header.version == Version::V3,
+                )?)
             }
         }
         None => None,
@@ -124,11 +134,7 @@ impl<'a> State<'a> {
     /// Read TZif data blocks
     fn new(cursor: &mut Cursor<'a>, first: bool) -> Result<Self, Error> {
         let header = Header::new(cursor)?;
-        let time_size = if first {
-            4
-        } else {
-            8
-        };
+        let time_size = if first { 4 } else { 8 };
 
         Ok(Self {
             time_size,
@@ -225,7 +231,10 @@ pub(crate) struct Cursor<'a> {
 impl<'a> Cursor<'a> {
     /// Construct a new `Cursor` from remaining data
     pub(crate) const fn new(remaining: &'a [u8]) -> Self {
-        Self { remaining, read_count: 0 }
+        Self {
+            remaining,
+            read_count: 0,
+        }
     }
 
     pub(crate) fn peek(&self) -> Option<&u8> {
