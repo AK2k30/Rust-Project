@@ -16,9 +16,9 @@ impl Version {
     /// Creates a `Version` instance for a specific `major.minor.patch` version.
     pub fn new(major: usize, minor: usize, patch: usize) -> Self {
         Version {
-            major: major,
-            minor: minor,
-            patch: patch,
+            major,
+            minor,
+            patch,
         }
     }
 
