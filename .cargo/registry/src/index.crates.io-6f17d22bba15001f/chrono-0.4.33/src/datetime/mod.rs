@@ -31,7 +31,12 @@ use crate::offset::{FixedOffset, Offset, TimeZone, Utc};
 use crate::Date;
 use crate::{Datelike, Months, Timelike, Weekday};
 
-#[cfg(any(feature = "rkyv", feature = "rkyv-16", feature = "rkyv-32", feature = "rkyv-64"))]
+#[cfg(any(
+    feature = "rkyv",
+    feature = "rkyv-16",
+    feature = "rkyv-32",
+    feature = "rkyv-64"
+))]
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[cfg(feature = "rustc-serialize")]
@@ -51,7 +56,12 @@ mod tests;
 /// [`TimeZone`](./offset/trait.TimeZone.html) implementations.
 #[derive(Clone)]
 #[cfg_attr(
-    any(feature = "rkyv", feature = "rkyv-16", feature = "rkyv-32", feature = "rkyv-64"),
+    any(
+        feature = "rkyv",
+        feature = "rkyv-16",
+        feature = "rkyv-32",
+        feature = "rkyv-64"
+    ),
     derive(Archive, Deserialize, Serialize),
     archive(compare(PartialEq, PartialOrd))
 )]
@@ -125,7 +135,10 @@ impl<Tz: TimeZone> DateTime<Tz> {
     pub fn from_local(datetime: NaiveDateTime, offset: Tz::Offset) -> DateTime<Tz> {
         let datetime_utc = datetime - offset.fix();
 
-        DateTime { datetime: datetime_utc, offset }
+        DateTime {
+            datetime: datetime_utc,
+            offset,
+        }
     }
 
     /// Retrieves the date component with an associated timezone.
@@ -357,7 +370,10 @@ impl<Tz: TimeZone> DateTime<Tz> {
     #[inline]
     #[must_use]
     pub fn to_utc(&self) -> DateTime<Utc> {
-        DateTime { datetime: self.datetime, offset: Utc }
+        DateTime {
+            datetime: self.datetime,
+            offset: Utc,
+        }
     }
 
     /// Adds given `Duration` to the current date and time.
@@ -513,14 +529,12 @@ impl<Tz: TimeZone> DateTime<Tz> {
         let earlier_time =
             (self.month(), self.day(), self.time()) < (base.month(), base.day(), base.time());
 
-        years -= match earlier_time {
-            true => 1,
-            false => 0,
-        };
+        years -= if earlier_time { 1 } else { 0 };
 
-        match years >= 0 {
-            true => Some(years as u32),
-            false => None,
+        if years >= 0 {
+            Some(years as u32)
+        } else {
+            None
         }
     }
 
@@ -534,8 +548,12 @@ impl<Tz: TimeZone> DateTime<Tz> {
     #[must_use]
     pub fn to_rfc2822(&self) -> String {
         let mut result = String::with_capacity(32);
-        write_rfc2822(&mut result, self.overflowing_naive_local(), self.offset.fix())
-            .expect("writing rfc2822 datetime to string should never fail");
+        write_rfc2822(
+            &mut result,
+            self.overflowing_naive_local(),
+            self.offset.fix(),
+        )
+        .expect("writing rfc2822 datetime to string should never fail");
         result
     }
 
@@ -580,15 +598,27 @@ impl<Tz: TimeZone> DateTime<Tz> {
     #[must_use]
     pub fn to_rfc3339_opts(&self, secform: SecondsFormat, use_z: bool) -> String {
         let mut result = String::with_capacity(38);
-        write_rfc3339(&mut result, self.naive_local(), self.offset.fix(), secform, use_z)
-            .expect("writing rfc3339 datetime to string should never fail");
+        write_rfc3339(
+            &mut result,
+            self.naive_local(),
+            self.offset.fix(),
+            secform,
+            use_z,
+        )
+        .expect("writing rfc3339 datetime to string should never fail");
         result
     }
 
     /// The minimum possible `DateTime<Utc>`.
-    pub const MIN_UTC: DateTime<Utc> = DateTime { datetime: NaiveDateTime::MIN, offset: Utc };
+    pub const MIN_UTC: DateTime<Utc> = DateTime {
+        datetime: NaiveDateTime::MIN,
+        offset: Utc,
+    };
     /// The maximum possible `DateTime<Utc>`.
-    pub const MAX_UTC: DateTime<Utc> = DateTime { datetime: NaiveDateTime::MAX, offset: Utc };
+    pub const MAX_UTC: DateTime<Utc> = DateTime {
+        datetime: NaiveDateTime::MAX,
+        offset: Utc,
+    };
 }
 
 impl DateTime<Utc> {
@@ -624,7 +654,9 @@ impl DateTime<Utc> {
     #[inline]
     #[must_use]
     pub fn from_timestamp(secs: i64, nsecs: u32) -> Option<Self> {
-        NaiveDateTime::from_timestamp_opt(secs, nsecs).as_ref().map(NaiveDateTime::and_utc)
+        NaiveDateTime::from_timestamp_opt(secs, nsecs)
+            .as_ref()
+            .map(NaiveDateTime::and_utc)
     }
 
     /// Makes a new [`DateTime<Utc>`] from the number of non-leap milliseconds
@@ -652,7 +684,9 @@ impl DateTime<Utc> {
     #[inline]
     #[must_use]
     pub fn from_timestamp_millis(millis: i64) -> Option<Self> {
-        NaiveDateTime::from_timestamp_millis(millis).as_ref().map(NaiveDateTime::and_utc)
+        NaiveDateTime::from_timestamp_millis(millis)
+            .as_ref()
+            .map(NaiveDateTime::and_utc)
     }
 
     // FIXME: remove when our MSRV is 1.61+
@@ -660,11 +694,17 @@ impl DateTime<Utc> {
     // can't be made const yet.
     // Trait bounds in const function / implementation blocks were not supported until 1.61.
     pub(crate) const fn from_naive_utc(datetime: NaiveDateTime) -> Self {
-        DateTime { datetime, offset: Utc }
+        DateTime {
+            datetime,
+            offset: Utc,
+        }
     }
 
     /// The Unix Epoch, 1970-01-01 00:00:00 UTC.
-    pub const UNIX_EPOCH: Self = Self { datetime: NaiveDateTime::UNIX_EPOCH, offset: Utc };
+    pub const UNIX_EPOCH: Self = Self {
+        datetime: NaiveDateTime::UNIX_EPOCH,
+        offset: Utc,
+    };
 }
 
 impl Default for DateTime<Utc> {
@@ -682,7 +722,9 @@ impl Default for DateTime<Local> {
 
 impl Default for DateTime<FixedOffset> {
     fn default() -> Self {
-        FixedOffset::west_opt(0).unwrap().from_utc_datetime(&NaiveDateTime::default())
+        FixedOffset::west_opt(0)
+            .unwrap()
+            .from_utc_datetime(&NaiveDateTime::default())
     }
 }
 
@@ -1255,7 +1297,8 @@ impl<Tz: TimeZone> Add<OldDuration> for DateTime<Tz> {
 
     #[inline]
     fn add(self, rhs: OldDuration) -> DateTime<Tz> {
-        self.checked_add_signed(rhs).expect("`DateTime + Duration` overflowed")
+        self.checked_add_signed(rhs)
+            .expect("`DateTime + Duration` overflowed")
     }
 }
 
@@ -1276,7 +1319,8 @@ impl<Tz: TimeZone> Add<Duration> for DateTime<Tz> {
     fn add(self, rhs: Duration) -> DateTime<Tz> {
         let rhs = OldDuration::from_std(rhs)
             .expect("overflow converting from core::time::Duration to chrono::Duration");
-        self.checked_add_signed(rhs).expect("`DateTime + Duration` overflowed")
+        self.checked_add_signed(rhs)
+            .expect("`DateTime + Duration` overflowed")
     }
 }
 
@@ -1293,8 +1337,10 @@ impl<Tz: TimeZone> Add<Duration> for DateTime<Tz> {
 impl<Tz: TimeZone> AddAssign<OldDuration> for DateTime<Tz> {
     #[inline]
     fn add_assign(&mut self, rhs: OldDuration) {
-        let datetime =
-            self.datetime.checked_add_signed(rhs).expect("`DateTime + Duration` overflowed");
+        let datetime = self
+            .datetime
+            .checked_add_signed(rhs)
+            .expect("`DateTime + Duration` overflowed");
         let tz = self.timezone();
         *self = tz.from_utc_datetime(&datetime);
     }
@@ -1329,8 +1375,10 @@ impl<Tz: TimeZone> Add<FixedOffset> for DateTime<Tz> {
 
     #[inline]
     fn add(mut self, rhs: FixedOffset) -> DateTime<Tz> {
-        self.datetime =
-            self.naive_utc().checked_add_offset(rhs).expect("`DateTime + FixedOffset` overflowed");
+        self.datetime = self
+            .naive_utc()
+            .checked_add_offset(rhs)
+            .expect("`DateTime + FixedOffset` overflowed");
         self
     }
 }
@@ -1352,7 +1400,8 @@ impl<Tz: TimeZone> Add<Months> for DateTime<Tz> {
     type Output = DateTime<Tz>;
 
     fn add(self, rhs: Months) -> Self::Output {
-        self.checked_add_months(rhs).expect("`DateTime + Months` out of range")
+        self.checked_add_months(rhs)
+            .expect("`DateTime + Months` out of range")
     }
 }
 
@@ -1373,7 +1422,8 @@ impl<Tz: TimeZone> Sub<OldDuration> for DateTime<Tz> {
 
     #[inline]
     fn sub(self, rhs: OldDuration) -> DateTime<Tz> {
-        self.checked_sub_signed(rhs).expect("`DateTime - Duration` overflowed")
+        self.checked_sub_signed(rhs)
+            .expect("`DateTime - Duration` overflowed")
     }
 }
 
@@ -1394,7 +1444,8 @@ impl<Tz: TimeZone> Sub<Duration> for DateTime<Tz> {
     fn sub(self, rhs: Duration) -> DateTime<Tz> {
         let rhs = OldDuration::from_std(rhs)
             .expect("overflow converting from core::time::Duration to chrono::Duration");
-        self.checked_sub_signed(rhs).expect("`DateTime - Duration` overflowed")
+        self.checked_sub_signed(rhs)
+            .expect("`DateTime - Duration` overflowed")
     }
 }
 
@@ -1413,8 +1464,10 @@ impl<Tz: TimeZone> Sub<Duration> for DateTime<Tz> {
 impl<Tz: TimeZone> SubAssign<OldDuration> for DateTime<Tz> {
     #[inline]
     fn sub_assign(&mut self, rhs: OldDuration) {
-        let datetime =
-            self.datetime.checked_sub_signed(rhs).expect("`DateTime - Duration` overflowed");
+        let datetime = self
+            .datetime
+            .checked_sub_signed(rhs)
+            .expect("`DateTime - Duration` overflowed");
         let tz = self.timezone();
         *self = tz.from_utc_datetime(&datetime)
     }
@@ -1449,8 +1502,10 @@ impl<Tz: TimeZone> Sub<FixedOffset> for DateTime<Tz> {
 
     #[inline]
     fn sub(mut self, rhs: FixedOffset) -> DateTime<Tz> {
-        self.datetime =
-            self.naive_utc().checked_sub_offset(rhs).expect("`DateTime - FixedOffset` overflowed");
+        self.datetime = self
+            .naive_utc()
+            .checked_sub_offset(rhs)
+            .expect("`DateTime - FixedOffset` overflowed");
         self
     }
 }
@@ -1472,7 +1527,8 @@ impl<Tz: TimeZone> Sub<Months> for DateTime<Tz> {
     type Output = DateTime<Tz>;
 
     fn sub(self, rhs: Months) -> Self::Output {
-        self.checked_sub_months(rhs).expect("`DateTime - Months` out of range")
+        self.checked_sub_months(rhs)
+            .expect("`DateTime - Months` out of range")
     }
 }
 
@@ -1508,7 +1564,8 @@ impl<Tz: TimeZone> Add<Days> for DateTime<Tz> {
     type Output = DateTime<Tz>;
 
     fn add(self, days: Days) -> Self::Output {
-        self.checked_add_days(days).expect("`DateTime + Days` out of range")
+        self.checked_add_days(days)
+            .expect("`DateTime + Days` out of range")
     }
 }
 
@@ -1526,7 +1583,8 @@ impl<Tz: TimeZone> Sub<Days> for DateTime<Tz> {
     type Output = DateTime<Tz>;
 
     fn sub(self, days: Days) -> Self::Output {
-        self.checked_sub_days(days).expect("`DateTime - Days` out of range")
+        self.checked_sub_days(days)
+            .expect("`DateTime - Days` out of range")
     }
 }
 
@@ -1590,7 +1648,8 @@ impl str::FromStr for DateTime<Utc> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> ParseResult<DateTime<Utc>> {
-        s.parse::<DateTime<FixedOffset>>().map(|dt| dt.with_timezone(&Utc))
+        s.parse::<DateTime<FixedOffset>>()
+            .map(|dt| dt.with_timezone(&Utc))
     }
 }
 
@@ -1612,7 +1671,8 @@ impl str::FromStr for DateTime<Local> {
     type Err = ParseError;
 
     fn from_str(s: &str) -> ParseResult<DateTime<Local>> {
-        s.parse::<DateTime<FixedOffset>>().map(|dt| dt.with_timezone(&Local))
+        s.parse::<DateTime<FixedOffset>>()
+            .map(|dt| dt.with_timezone(&Local))
     }
 }
 
@@ -1723,14 +1783,20 @@ where
 
     assert_eq!(
         to_string_fixed(
-            &FixedOffset::east_opt(3660).unwrap().with_ymd_and_hms(2014, 7, 24, 12, 34, 6).unwrap()
+            &FixedOffset::east_opt(3660)
+                .unwrap()
+                .with_ymd_and_hms(2014, 7, 24, 12, 34, 6)
+                .unwrap()
         )
         .ok(),
         Some(r#""2014-07-24T12:34:06+01:01""#.into())
     );
     assert_eq!(
         to_string_fixed(
-            &FixedOffset::east_opt(3650).unwrap().with_ymd_and_hms(2014, 7, 24, 12, 34, 6).unwrap()
+            &FixedOffset::east_opt(3650)
+                .unwrap()
+                .with_ymd_and_hms(2014, 7, 24, 12, 34, 6)
+                .unwrap()
         )
         .ok(),
         // An offset with seconds is not allowed by RFC 3339, so we round it to the nearest minute.
@@ -1739,7 +1805,11 @@ where
     );
 }
 
-#[cfg(all(test, feature = "clock", any(feature = "rustc-serialize", feature = "serde")))]
+#[cfg(all(
+    test,
+    feature = "clock",
+    any(feature = "rustc-serialize", feature = "serde")
+))]
 fn test_decodable_json<FUtc, FFixed, FLocal, E>(
     utc_from_str: FUtc,
     fixed_from_str: FFixed,
@@ -1767,7 +1837,10 @@ fn test_decodable_json<FUtc, FFixed, FLocal, E>(
     assert_eq!(
         norm(&fixed_from_str(r#""2014-07-24T12:34:06Z""#).ok()),
         norm(&Some(
-            FixedOffset::east_opt(0).unwrap().with_ymd_and_hms(2014, 7, 24, 12, 34, 6).unwrap()
+            FixedOffset::east_opt(0)
+                .unwrap()
+                .with_ymd_and_hms(2014, 7, 24, 12, 34, 6)
+                .unwrap()
         ))
     );
     assert_eq!(
@@ -1816,19 +1889,27 @@ fn test_decodable_json_timestamps<FUtc, FFixed, FLocal, E>(
     );
     assert_eq!(
         norm(&utc_from_str("-1").ok().map(DateTime::from)),
-        norm(&Some(Utc.with_ymd_and_hms(1969, 12, 31, 23, 59, 59).unwrap()))
+        norm(&Some(
+            Utc.with_ymd_and_hms(1969, 12, 31, 23, 59, 59).unwrap()
+        ))
     );
 
     assert_eq!(
         norm(&fixed_from_str("0").ok().map(DateTime::from)),
         norm(&Some(
-            FixedOffset::east_opt(0).unwrap().with_ymd_and_hms(1970, 1, 1, 0, 0, 0).unwrap()
+            FixedOffset::east_opt(0)
+                .unwrap()
+                .with_ymd_and_hms(1970, 1, 1, 0, 0, 0)
+                .unwrap()
         ))
     );
     assert_eq!(
         norm(&fixed_from_str("-1").ok().map(DateTime::from)),
         norm(&Some(
-            FixedOffset::east_opt(0).unwrap().with_ymd_and_hms(1969, 12, 31, 23, 59, 59).unwrap()
+            FixedOffset::east_opt(0)
+                .unwrap()
+                .with_ymd_and_hms(1969, 12, 31, 23, 59, 59)
+                .unwrap()
         ))
     );
 
